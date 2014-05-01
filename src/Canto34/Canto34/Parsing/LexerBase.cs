@@ -30,9 +30,8 @@
         /// Create a lexer with the string you want to scan
         /// </summary>
         /// <param name="content"></param>
-        public LexerBase(string content)
+        public LexerBase(string content): this(new LexerInput(content))
         {
-            this.input = new LexerInput(content);
         }
 
         /// <summary>
@@ -51,6 +50,7 @@
         public LexerBase(LexerInput input)
         {
             this.input = input;
+            this.StandardTokens = new StandardTokenTypes(this);
         }
 
         /// <summary>
@@ -115,6 +115,21 @@
         {
             AddPattern(tokenType, pattern, options, typeName, escapeFunction:null);
         }
+        public class StandardTokenTypes
+        {
+            private readonly LexerBase lexer;
+            
+            public StandardTokenTypes(LexerBase lexer)
+            {
+                this.lexer = lexer;
+            }
+            public void AddWhitespace()
+            {
+                this.lexer.AddPattern(-99, @"\s+", "whitespace");
+            }
+        }
+
+        public StandardTokenTypes StandardTokens { get; private set; }
 
         public void AddPattern(int tokenType, string pattern, RegexOptions options, string typeName, Func<string,string> escapeFunction)
         {

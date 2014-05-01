@@ -124,6 +124,14 @@
             return actual;
         }
 
+        protected T Match<T>(int first, int second, Func<string, string, T> onMatch)
+        {
+            var firstToken = Match(first).Content;
+            var secondToken = Match(second).Content;
+            T result = onMatch(firstToken, secondToken);
+            return result;
+        }
+
         protected Token Match(int expected)
         {
             var actual = MatchAny();
