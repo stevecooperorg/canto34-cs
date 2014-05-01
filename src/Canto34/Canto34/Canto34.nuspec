@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>0.0.1-alpha001</version>
+    <title>$title$</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <licenseUrl>https://github.com/stevecooperorg/canto34-cs/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/stevecooperorg/canto34-cs</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+    <releaseNotes>Very early version.</releaseNotes>
+    <copyright>Copyright 2014</copyright>
+    <tags>C# Parsing Lexing Scanning</tags>
+  </metadata>
+</package>
