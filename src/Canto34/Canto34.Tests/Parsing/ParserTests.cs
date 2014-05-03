@@ -51,15 +51,32 @@ namespace Canto34.Tests.Parsing
             var sexpr2 = this.GetSExprParser("(a b c)").SExpression();
             var sexpr3 = this.GetSExprParser("(a (b c d) c)").SExpression();
         }
+
+        [TestMethod, ExpectedException(typeof(ParseException))]
+        public void ThrowsOnUnclosedSExpressions()
+        {
+            this.GetSExprParser("(a").SExpression();
+        }
+
+        [TestMethod, ExpectedException(typeof(ParseException))]
+        public void ThrowsOnJustACloseSExpressions()
+        {
+            this.GetSExprParser(")").SExpression();
+        }
+
     }
 
     public class SExpressionLexer : LexerBase
     {
+        public const int OP = 1;
+        public const int CL = 2;
+        public const int ATOM = 3;
+
         public SExpressionLexer(string input): base(input)
         {
-            this.AddLiteral(1, "(");
-            this.AddLiteral(2, ")");
-            this.AddPattern(3, "[a-z]+", "atom");
+            this.AddLiteral(OP, "(");
+            this.AddLiteral(CL, ")");
+            this.AddPattern(ATOM, "[a-z]+", "atom");
             this.StandardTokens.AddWhitespace();
         }
     }
@@ -73,23 +90,23 @@ namespace Canto34.Tests.Parsing
 
         internal dynamic SExpression()
         {
-            if (LA1.Is("("))
+            if (LA1.Is(SExpressionLexer.OP))
             {
-                Match("(");
+                Match(SExpressionLexer.OP);
             }
             else
             {
-                var atom = MatchAny().Content;
+                var atom = Match(SExpressionLexer.ATOM).Content;
                 return atom;
             }
 
             var array = new List<dynamic>();
-            while (!LA1.Is(")"))
+            while (!EOF && !LA1.Is(SExpressionLexer.CL))
             {
                 array.Add(SExpression());
             }
 
-            Match(")");
+            Match(SExpressionLexer.CL);
             return array;
         }
     }
