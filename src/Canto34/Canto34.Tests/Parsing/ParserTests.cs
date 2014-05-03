@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,6 +11,14 @@ namespace Canto34.Tests.Parsing
     [TestClass]
     public class ParserTests
     {
+        [TestMethod]
+        public void ShouldParseAssignmentStatements()
+        {
+            GetCalcParser("x = 12;").Assignment();
+            GetCalcParser("x = 12 + 34;").Assignment();
+            GetCalcParser("x = 12 + 34 + 56;").Assignment();
+        }
+
         [TestMethod]
         public void ParserParsesSimpleSequence()
         {
@@ -44,6 +53,16 @@ namespace Canto34.Tests.Parsing
             return parser;
         }
 
+
+        private CalcParser GetCalcParser(string input)
+        {
+            var lexer = new CalcLexer(input);
+            var tokens = lexer.Tokens().ToList();
+            var parser = new CalcParser();
+            parser.Initialize(tokens, lexer);
+            return parser;
+        }
+
         [TestMethod]
         public void ParsesSExpression()
         {
@@ -66,13 +85,63 @@ namespace Canto34.Tests.Parsing
 
     }
 
+    public class CalcLexer : LexerBase
+    {
+        public static readonly int PLUS = NextTokenType();
+        public static readonly int SEMI = NextTokenType();
+        public static readonly int ID = NextTokenType();
+        public static readonly int NUMBER = NextTokenType();
+        public static readonly int EQUALS = NextTokenType();
+
+        public CalcLexer(string input)
+            : base(input)
+        {
+            this.AddLiteral(PLUS, "+");
+            this.AddLiteral(SEMI, ";");
+            this.AddLiteral(EQUALS, "=");
+            this.AddPattern(ID, "[a-z]+", "ID");
+            this.AddPattern(NUMBER, "[0-9]+", "NUMBER");
+            this.AddLiteral(PLUS, "+");
+            this.StandardTokens.AddWhitespace();
+        }
+    }
+
+    public class CalcParser : ParserBase
+    {
+        public void Assignment()
+        {
+            var nameToken = Match(CalcLexer.ID);
+            Match(CalcLexer.EQUALS);
+            var number = AdditionExpression();
+            Match(CalcLexer.SEMI);
+            Console.WriteLine("Recognised {0} = {1}", nameToken.Content, number);
+        }
+
+        public int AdditionExpression()
+        {
+            // get the number
+            var numberToken = Match(CalcLexer.NUMBER);
+            var number = int.Parse(numberToken.Content, CultureInfo.InvariantCulture);
+
+            // look for a plus; recurse.
+            if (!EOF && LA1.Is(CalcLexer.PLUS))
+            {
+                Match(CalcLexer.PLUS);
+                number += AdditionExpression();
+            }
+
+            return number;
+        }
+    }
+
     public class SExpressionLexer : LexerBase
     {
         public const int OP = 1;
         public const int CL = 2;
         public const int ATOM = 3;
 
-        public SExpressionLexer(string input): base(input)
+        public SExpressionLexer(string input)
+            : base(input)
         {
             this.AddLiteral(OP, "(");
             this.AddLiteral(CL, ")");
@@ -83,11 +152,6 @@ namespace Canto34.Tests.Parsing
 
     public class SExpressionParser : ParserBase
     {
-        public SExpressionParser()
-        {
-
-        }
-
         internal dynamic SExpression()
         {
             if (LA1.Is(SExpressionLexer.OP))
@@ -147,6 +211,6 @@ namespace Canto34.Tests.Parsing
         //    return Match(1, Match , 1, (a, b) => b + a);
         //}
 
-        
+
     }
 }
