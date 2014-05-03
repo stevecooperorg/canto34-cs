@@ -13,7 +13,7 @@ namespace Canto34.Tests.Parsing
         [TestMethod]
         public void ShouldLexTokens()
         {
-            var testLexer = new TestLexer("foo bar baz - quux $corge");
+            var testLexer = new FooBarBazLexer("foo bar baz - quux $corge");
             var tokens = testLexer.Tokens().ToList();
             var expected = @"foo type=foo:1, l.1 ch.1
 bar type=bar:2, l.1 ch.5
@@ -28,28 +28,10 @@ $corge type=id:5, l.1 ch.20";
         [TestMethod]
         public void ShouldBeAbleToRetrieveTokenNames()
         {
-            var testLexer = new TestLexer("foo bar baz - quux");
+            var testLexer = new FooBarBazLexer("foo bar baz - quux");
             Assert.AreEqual("foo", testLexer.NameOfTokenType(1));
             Assert.AreEqual("id", testLexer.NameOfTokenType(5));
             Assert.AreEqual("whitespace", testLexer.NameOfTokenType(-1));
-        }
-    }
-
-    public class TestLexer: LexerBase
-    {
-        public TestLexer(string input): this(new LexerInput(input))
-        {
-        }
-
-        public TestLexer(LexerInput input): base(input)
-        {
-            this.AddPattern(-1, @"\s+", "whitespace");
-            this.AddKeyword(1, "foo");
-            this.AddKeyword(2, "bar");
-            this.AddKeyword(3,"baz");
-            this.AddKeyword(4, "quux");
-            this.AddPattern(5, @"\$[a-z]+", "id");
-            this.AddLiteral(6, "-");
         }
     }
 }
